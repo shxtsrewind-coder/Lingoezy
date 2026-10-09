@@ -1,0 +1,1062 @@
+<title>Lingoezy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Figtree:wght@400;500;600;700&family=Saira+Stencil+One&display=swap">
+<style>
+/* Layout: a language-class index card on a desk — word on the card, four answers below, a rubber stamp for the verdict */
+:root {
+  --desk: #dde4ea;
+  --card: #ffffff;
+  --rule-blue: #cfdcef;
+  --margin-red: #ec9a9a;
+  --ink: #1e2330;
+  --muted: #5b6474;
+  --pen: #2447c4;
+  --stamp-bad: #c62f28;
+  --stamp-good: #1b7a45;
+  --line: #c4ccd6;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-stamp: "Saira Stencil One", Impact, "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #10141b; --card: #1a2029; --rule-blue: #26344a; --margin-red: #6f3a3d; --ink: #e8ecf2; --muted: #98a2b2;
+    --pen: #8aa4ff; --stamp-bad: #ff6a5c; --stamp-good: #4fcf8a; --line: #2e3744;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #10141b; --card: #1a2029; --rule-blue: #26344a; --margin-red: #6f3a3d; --ink: #e8ecf2; --muted: #98a2b2;
+  --pen: #8aa4ff; --stamp-bad: #ff6a5c; --stamp-good: #4fcf8a; --line: #2e3744;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--desk); color: var(--ink); font-family: var(--font-body); font-size: 16px;
+  padding-inline: 16px; padding-block: 14px 32px; -webkit-tap-highlight-color: transparent;
+}
+.app { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.view { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+button, input, select { font: inherit; color: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+
+/* header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 28px; letter-spacing: -0.03em; display: flex; align-items: baseline; gap: 2px; }
+.brand em { font-style: normal; color: var(--pen); }
+.meta { display: flex; gap: 6px; }
+.chip { font-size: 13px; font-weight: 600; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip b { font-weight: 700; }
+
+/* language + mode pickers */
+.langs { display: flex; flex-wrap: wrap; gap: 6px; }
+.langs button {
+  border: 1.5px solid var(--line); background: transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer;
+  font-weight: 600; font-size: 14px; display: flex; gap: 6px; align-items: baseline;
+}
+.langs button small { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.langs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--card); }
+.langs button[aria-pressed="true"] small { color: inherit; opacity: 0.7; }
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1.5px solid var(--line); }
+.modes button {
+  border: 0; background: none; padding: 10px 4px 9px; font-weight: 700; font-size: 14px; color: var(--muted); cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -1.5px;
+}
+.modes button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--pen); }
+
+/* progress */
+.progress { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.progress span { height: 6px; border-radius: 3px; background: var(--line); }
+.progress span.ok { background: var(--stamp-good); }
+.progress span.bad { background: var(--stamp-bad); }
+.progress span.now { background: var(--pen); }
+.run { font-size: 14px; color: var(--muted); }
+.run b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* index card */
+.card {
+  position: relative; background-color: var(--card); border-radius: 6px; overflow: hidden;
+  box-shadow: 0 1px 0 var(--line), 0 10px 24px -14px rgba(20, 30, 50, 0.35);
+  padding: 0 18px 22px 58px; min-height: 230px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule-blue) 31px 32px);
+  background-position: 0 52px; background-repeat: repeat-y;
+}
+.card::before { content: ""; position: absolute; top: 0; bottom: 0; left: 42px; width: 1.5px; background: var(--margin-red); }
+.card-head {
+  height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 2px solid var(--margin-red); margin-left: -58px; padding-left: 58px; margin-right: -18px; padding-right: 18px;
+  background: var(--card); position: relative;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+.card-head .dir { color: var(--pen); }
+.headword {
+  font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(38px, 11vw, 60px); margin-top: 34px; overflow-wrap: anywhere; text-wrap: balance;
+}
+.prompt-note { margin-top: 10px; font-size: 15px; color: var(--muted); line-height: 32px; }
+.prompt-note b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.stamp {
+  position: absolute; right: 18px; bottom: 34px; transform: rotate(-9deg); transform-origin: 80% 80%;
+  font-family: var(--font-stamp); font-size: 30px; letter-spacing: 0.06em; line-height: 1;
+  border: 3.5px solid currentColor; border-radius: 6px; padding: 7px 12px 5px; opacity: 0.92;
+  animation: slam 260ms cubic-bezier(.2,1.4,.4,1) both; pointer-events: none; text-align: center;
+}
+.stamp small { display: block; font-family: var(--font-body); font-weight: 800; font-size: 11px; letter-spacing: 0.12em; margin-top: 3px; }
+.stamp.bad { color: var(--stamp-bad); }
+.stamp.good { color: var(--stamp-good); }
+@keyframes slam { from { transform: rotate(-9deg) scale(1.9); opacity: 0; } to { transform: rotate(-9deg) scale(1); opacity: 0.92; } }
+.card.answered .prompt-note { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .stamp { animation: none; } }
+
+/* options */
+.options { display: grid; gap: 8px; }
+.opt {
+  position: relative; overflow: hidden; text-align: left; border: 1.5px solid var(--line); background: var(--card);
+  border-radius: 10px; padding: 13px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 56px;
+}
+.opt:hover:not(:disabled) { border-color: var(--ink); }
+.opt:disabled { cursor: default; }
+.opt .fill { position: absolute; inset: 0 auto 0 0; background: var(--rule-blue); opacity: 0.7; width: 0; transition: width 500ms ease-out; }
+.opt > :not(.fill) { position: relative; }
+.opt .w { font-weight: 700; font-size: 19px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.opt .m { font-size: 13.5px; color: var(--muted); font-weight: 500; }
+.opt .pct { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; min-width: 3.2ch; text-align: right; }
+.opt .mark { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; }
+.opt.right { border-color: var(--stamp-good); border-width: 2.5px; }
+.opt.right .mark { background: var(--stamp-good); }
+.opt.wrong { border-color: var(--stamp-bad); border-width: 2.5px; }
+.opt.wrong .mark { background: var(--stamp-bad); }
+@media (prefers-reduced-motion: reduce) { .opt .fill { transition: none; } }
+
+.explain { margin: 0; line-height: 1.5; font-size: 15.5px; }
+.explain:empty { display: none; }
+.explain b { font-weight: 700; }
+.btn {
+  border: 1.5px solid var(--ink); background: var(--card); color: var(--ink); border-radius: 10px; padding: 13px 16px;
+  font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; text-decoration: none; display: inline-flex; justify-content: center; align-items: center;
+}
+.btn.primary { background: var(--pen); border-color: var(--pen); color: #fff; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row > * { flex: 1 1 130px; }
+
+/* summary */
+.summary { display: flex; flex-direction: column; gap: 12px; padding: 22px 18px 20px 58px; }
+.score { font-family: var(--font-display); font-weight: 800; font-size: 64px; line-height: 1; letter-spacing: -0.04em; }
+.score span { font-size: 28px; color: var(--muted); letter-spacing: 0; }
+.tiles { display: flex; gap: 4px; flex-wrap: wrap; }
+.tiles i { width: 22px; height: 22px; border-radius: 4px; background: var(--stamp-good); }
+.tiles i.bad { background: var(--stamp-bad); }
+.review { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.review li { line-height: 32px; font-size: 15px; display: flex; flex-wrap: wrap; column-gap: 8px; min-width: 0; }
+.review li span:first-child { color: var(--muted); flex: none; }
+.review li.bad b { color: var(--stamp-bad); }
+
+/* make a quiz */
+.form { display: grid; gap: 12px; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); }
+.field input, .field select {
+  border: 1.5px solid var(--line); background: var(--card); border-radius: 9px; padding: 11px 12px; font-size: 16px; width: 100%;
+}
+.decoys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.err { color: var(--stamp-bad); font-size: 14px; font-weight: 600; margin: 0; }
+.err:empty { display: none; }
+.linkbox { display: grid; gap: 8px; padding: 14px; border: 1.5px dashed var(--pen); border-radius: 10px; }
+.linkbox input { font-size: 13px; }
+.hint { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.45; }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">Lingo<em>ezy</em></div>
+    <div class="meta">
+      <span class="chip"><b id="streakNum">0</b> day streak</span>
+      <span class="chip"><b id="pointsNum">0</b> pts</span>
+    </div>
+  </header>
+
+  <nav class="langs" id="langs" aria-label="Language"></nav>
+  <nav class="modes" aria-label="Mode">
+    <button id="modeDaily" aria-pressed="true">Today's ten</button>
+    <button id="modePractice" aria-pressed="false">Practice</button>
+    <button id="modeMake" aria-pressed="false">Make a quiz</button>
+  </nav>
+
+  <section id="playView" class="view">
+    <div class="progress" id="progress"></div>
+    <div class="run" id="runLine" hidden></div>
+    <article class="card" id="card" aria-live="polite">
+      <div class="card-head"><span class="dir" id="dirLabel">English → Spanish</span><span id="qLabel">1 / 10</span></div>
+      <div class="headword" id="word"></div>
+      <div class="prompt-note" id="promptNote">Pick the right translation.</div>
+      <div class="stamp" id="stamp" hidden></div>
+    </article>
+    <div class="options" id="options"></div>
+    <p class="explain" id="explain"></p>
+    <div class="btn-row" id="nextRow" hidden>
+      <button class="btn primary" id="nextBtn">Next word</button>
+    </div>
+  </section>
+
+  <section id="summaryView" hidden>
+    <article class="card summary" id="summaryCard">
+      <div class="card-head" style="margin-left:-58px;margin-right:-18px;margin-top:-22px"><span class="dir" id="sumDir">Spanish</span><span id="sumDate"></span></div>
+      <div class="score" id="sumScore">0<span>/10</span></div>
+      <div class="tiles" id="sumTiles"></div>
+      <p class="explain" id="sumNote"></p>
+      <ul class="review" id="sumReview"></ul>
+    </article>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn" id="copyShare">Copy result</button>
+      <a class="btn" id="waShare" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn" id="xShare" target="_blank" rel="noopener">Post on X</a>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn" id="sumPractice">Keep practising</button>
+      <button class="btn primary" id="sumMake">Quiz a friend</button>
+    </div>
+  </section>
+
+  <section id="makeView" hidden>
+    <form class="form" id="makeForm" novalidate>
+      <p class="hint">Write one word, its translation and three decoys that look convincing. You get a link that anyone can open to try it.</p>
+      <div class="field"><label for="mkLang">Language</label><select id="mkLang"></select></div>
+      <div class="field"><label for="mkEn">English word</label><input id="mkEn" maxlength="40" placeholder="embarrassed" autocomplete="off"></div>
+      <div class="field"><label for="mkAns">Correct translation</label><input id="mkAns" maxlength="40" placeholder="avergonzado" autocomplete="off"></div>
+      <div class="field">
+        <label for="mkD1">Three decoys</label>
+        <div class="decoys">
+          <input id="mkD1" maxlength="40" placeholder="embarazada" autocomplete="off" aria-label="Decoy 1">
+          <input id="mkD2" maxlength="40" placeholder="avenida" autocomplete="off" aria-label="Decoy 2">
+          <input id="mkD3" maxlength="40" placeholder="aventura" autocomplete="off" aria-label="Decoy 3">
+        </div>
+      </div>
+      <button type="button" class="btn" id="mkSuggest">Suggest look-alike decoys</button>
+      <div class="field"><label for="mkBy">Your name (optional)</label><input id="mkBy" maxlength="24" placeholder="Ada" autocomplete="off"></div>
+      <p class="err" id="mkErr"></p>
+      <button type="submit" class="btn primary">Create quiz link</button>
+    </form>
+    <div class="linkbox" id="mkOut" hidden style="margin-top:14px">
+      <strong>Your quiz is ready</strong>
+      <input id="mkLink" readonly aria-label="Quiz link">
+      <div class="btn-row">
+        <button class="btn" id="mkCopy">Copy link</button>
+        <a class="btn" id="mkWa" target="_blank" rel="noopener">WhatsApp</a>
+        <button class="btn" id="mkTry">Try it</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ---------------- config ----------------
+// Fill these in on bgameworld to turn on real crowd stats (see supabase.sql).
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+const LAUNCH_DATE = '2026-10-09';
+const SITE = /bgameworld\.com$/.test(location.hostname) ? location.origin + location.pathname : 'https://lingoezy.bgameworld.com/';
+
+// Lingoezy core: word bank, false-friend traps, look-alike decoys, daily set.
+
+const LANGS = {
+  es: { name: 'Spanish', native: 'Español', col: 1 },
+  fr: { name: 'French', native: 'Français', col: 2 },
+  pt: { name: 'Portuguese', native: 'Português', col: 3 },
+  de: { name: 'German', native: 'Deutsch', col: 4 },
+  it: { name: 'Italian', native: 'Italiano', col: 5 },
+};
+
+// english | spanish | french | portuguese (Brazil) | german | italian
+const VOCAB_RAW = `house|casa|maison|casa|Haus|casa
+dog|perro|chien|cachorro|Hund|cane
+cat|gato|chat|gato|Katze|gatto
+book|libro|livre|livro|Buch|libro
+water|agua|eau|água|Wasser|acqua
+bread|pan|pain|pão|Brot|pane
+apple|manzana|pomme|maçã|Apfel|mela
+window|ventana|fenêtre|janela|Fenster|finestra
+door|puerta|porte|porta|Tür|porta
+table|mesa|table|mesa|Tisch|tavolo
+chair|silla|chaise|cadeira|Stuhl|sedia
+bed|cama|lit|cama|Bett|letto
+kitchen|cocina|cuisine|cozinha|Küche|cucina
+street|calle|rue|rua|Straße|strada
+city|ciudad|ville|cidade|Stadt|città
+country|país|pays|país|Land|paese
+tree|árbol|arbre|árvore|Baum|albero
+flower|flor|fleur|flor|Blume|fiore
+sun|sol|soleil|sol|Sonne|sole
+moon|luna|lune|lua|Mond|luna
+star|estrella|étoile|estrela|Stern|stella
+sea|mar|mer|mar|Meer|mare
+river|río|rivière|rio|Fluss|fiume
+mountain|montaña|montagne|montanha|Berg|montagna
+bird|pájaro|oiseau|pássaro|Vogel|uccello
+fish|pez|poisson|peixe|Fisch|pesce
+horse|caballo|cheval|cavalo|Pferd|cavallo
+cow|vaca|vache|vaca|Kuh|mucca
+egg|huevo|œuf|ovo|Ei|uovo
+milk|leche|lait|leite|Milch|latte
+cheese|queso|fromage|queijo|Käse|formaggio
+butter|mantequilla|beurre|manteiga|Butter|burro
+sugar|azúcar|sucre|açúcar|Zucker|zucchero
+salt|sal|sel|sal|Salz|sale
+rice|arroz|riz|arroz|Reis|riso
+meat|carne|viande|carne|Fleisch|carne
+soup|sopa|soupe|sopa|Suppe|zuppa
+knife|cuchillo|couteau|faca|Messer|coltello
+spoon|cuchara|cuillère|colher|Löffel|cucchiaio
+fork|tenedor|fourchette|garfo|Gabel|forchetta
+key|llave|clé|chave|Schlüssel|chiave
+money|dinero|argent|dinheiro|Geld|soldi
+shirt|camisa|chemise|camisa|Hemd|camicia
+shoe|zapato|chaussure|sapato|Schuh|scarpa
+hat|sombrero|chapeau|chapéu|Hut|cappello
+head|cabeza|tête|cabeça|Kopf|testa
+hand|mano|main|mão|Hand|mano
+eye|ojo|œil|olho|Auge|occhio
+ear|oreja|oreille|orelha|Ohr|orecchio
+mouth|boca|bouche|boca|Mund|bocca
+nose|nariz|nez|nariz|Nase|naso
+heart|corazón|cœur|coração|Herz|cuore
+tooth|diente|dent|dente|Zahn|dente
+friend|amigo|ami|amigo|Freund|amico
+brother|hermano|frère|irmão|Bruder|fratello
+sister|hermana|sœur|irmã|Schwester|sorella
+mother|madre|mère|mãe|Mutter|madre
+father|padre|père|pai|Vater|padre
+child|niño|enfant|criança|Kind|bambino
+woman|mujer|femme|mulher|Frau|donna
+man|hombre|homme|homem|Mann|uomo
+doctor|médico|médecin|médico|Arzt|medico
+school|escuela|école|escola|Schule|scuola
+church|iglesia|église|igreja|Kirche|chiesa
+market|mercado|marché|mercado|Markt|mercato
+hospital|hospital|hôpital|hospital|Krankenhaus|ospedale
+bridge|puente|pont|ponte|Brücke|ponte
+train|tren|train|trem|Zug|treno
+boat|barco|bateau|barco|Boot|barca
+plane|avión|avion|avião|Flugzeug|aereo
+bicycle|bicicleta|vélo|bicicleta|Fahrrad|bicicletta
+hour|hora|heure|hora|Stunde|ora
+day|día|jour|dia|Tag|giorno
+night|noche|nuit|noite|Nacht|notte
+week|semana|semaine|semana|Woche|settimana
+year|año|année|ano|Jahr|anno
+rain|lluvia|pluie|chuva|Regen|pioggia
+snow|nieve|neige|neve|Schnee|neve
+wind|viento|vent|vento|Wind|vento
+fire|fuego|feu|fogo|Feuer|fuoco
+stone|piedra|pierre|pedra|Stein|pietra
+gold|oro|or|ouro|Gold|oro
+colour|color|couleur|cor|Farbe|colore
+song|canción|chanson|canção|Lied|canzone
+game|juego|jeu|jogo|Spiel|gioco
+word|palabra|mot|palavra|Wort|parola
+letter (mail)|carta|lettre|carta|Brief|lettera
+paper|papel|papier|papel|Papier|carta
+box|caja|boîte|caixa|Schachtel|scatola
+garden|jardín|jardin|jardim|Garten|giardino
+beach|playa|plage|praia|Strand|spiaggia
+island|isla|île|ilha|Insel|isola
+forest|bosque|forêt|floresta|Wald|foresta
+dream|sueño|rêve|sonho|Traum|sogno
+love|amor|amour|amor|Liebe|amore
+war|guerra|guerre|guerra|Krieg|guerra
+peace|paz|paix|paz|Frieden|pace
+king|rey|roi|rei|König|re
+queen|reina|reine|rainha|Königin|regina
+wall|pared|mur|parede|Wand|parete
+roof|techo|toit|telhado|Dach|tetto
+clothes|ropa|vêtements|roupa|Kleidung|vestiti
+ice|hielo|glace|gelo|Eis|ghiaccio
+sky|cielo|ciel|céu|Himmel|cielo
+world|mundo|monde|mundo|Welt|mondo
+name|nombre|nom|nome|Name|nome
+question|pregunta|question|pergunta|Frage|domanda
+answer|respuesta|réponse|resposta|Antwort|risposta
+lamp|lámpara|lampe|lâmpada|Lampe|lampada
+cloud|nube|nuage|nuvem|Wolke|nuvola
+wing|ala|aile|asa|Flügel|ala
+bee|abeja|abeille|abelha|Biene|ape
+ant|hormiga|fourmi|formiga|Ameise|formica
+butterfly|mariposa|papillon|borboleta|Schmetterling|farfalla
+lion|león|lion|leão|Löwe|leone
+bear|oso|ours|urso|Bär|orso
+mouse|ratón|souris|rato|Maus|topo
+snake|serpiente|serpent|cobra|Schlange|serpente
+frog|rana|grenouille|rã|Frosch|rana
+pig|cerdo|cochon|porco|Schwein|maiale
+sheep|oveja|mouton|ovelha|Schaf|pecora
+goat|cabra|chèvre|cabra|Ziege|capra
+duck|pato|canard|pato|Ente|anatra
+orange (fruit)|naranja|orange|laranja|Orange|arancia
+lemon|limón|citron|limão|Zitrone|limone
+grape|uva|raisin|uva|Traube|uva
+onion|cebolla|oignon|cebola|Zwiebel|cipolla
+garlic|ajo|ail|alho|Knoblauch|aglio
+tomato|tomate|tomate|tomate|Tomate|pomodoro
+honey|miel|miel|mel|Honig|miele
+wine|vino|vin|vinho|Wein|vino
+beer|cerveza|bière|cerveja|Bier|birra
+coffee|café|café|café|Kaffee|caffè
+tea|té|thé|chá|Tee|tè
+to eat|comer|manger|comer|essen|mangiare
+to drink|beber|boire|beber|trinken|bere
+to sleep|dormir|dormir|dormir|schlafen|dormire
+to run|correr|courir|correr|rennen|correre
+to swim|nadar|nager|nadar|schwimmen|nuotare
+to sing|cantar|chanter|cantar|singen|cantare
+to dance|bailar|danser|dançar|tanzen|ballare
+to write|escribir|écrire|escrever|schreiben|scrivere
+to read|leer|lire|ler|lesen|leggere
+to buy|comprar|acheter|comprar|kaufen|comprare
+to sell|vender|vendre|vender|verkaufen|vendere
+to open|abrir|ouvrir|abrir|öffnen|aprire
+to close|cerrar|fermer|fechar|schließen|chiudere
+to cry|llorar|pleurer|chorar|weinen|piangere
+to laugh|reír|rire|rir|lachen|ridere
+to wait|esperar|attendre|esperar|warten|aspettare
+to forget|olvidar|oublier|esquecer|vergessen|dimenticare
+to remember|recordar|se souvenir|lembrar|sich erinnern|ricordare
+to fly|volar|voler|voar|fliegen|volare
+to walk|caminar|marcher|andar|gehen|camminare
+to cook|cocinar|cuisiner|cozinhar|kochen|cucinare
+to clean|limpiar|nettoyer|limpar|putzen|pulire
+to win|ganar|gagner|ganhar|gewinnen|vincere
+to lose|perder|perdre|perder|verlieren|perdere
+to build|construir|construire|construir|bauen|costruire
+to teach|enseñar|enseigner|ensinar|unterrichten|insegnare
+to help|ayudar|aider|ajudar|helfen|aiutare
+to speak|hablar|parler|falar|sprechen|parlare
+to listen|escuchar|écouter|escutar|zuhören|ascoltare
+to see|ver|voir|ver|sehen|vedere
+to give|dar|donner|dar|geben|dare
+to play|jugar|jouer|jogar|spielen|giocare
+to jump|saltar|sauter|pular|springen|saltare
+to work|trabajar|travailler|trabalhar|arbeiten|lavorare
+to travel|viajar|voyager|viajar|reisen|viaggiare
+to smile|sonreír|sourire|sorrir|lächeln|sorridere
+big|grande|grand|grande|groß|grande
+small|pequeño|petit|pequeno|klein|piccolo
+hot|caliente|chaud|quente|heiß|caldo
+cold|frío|froid|frio|kalt|freddo
+new|nuevo|nouveau|novo|neu|nuovo
+old|viejo|vieux|velho|alt|vecchio
+young|joven|jeune|jovem|jung|giovane
+happy|feliz|heureux|feliz|glücklich|felice
+sad|triste|triste|triste|traurig|triste
+fast|rápido|rapide|rápido|schnell|veloce
+slow|lento|lent|lento|langsam|lento
+beautiful|hermoso|beau|bonito|schön|bello
+strong|fuerte|fort|forte|stark|forte
+empty|vacío|vide|vazio|leer|vuoto
+full|lleno|plein|cheio|voll|pieno
+heavy|pesado|lourd|pesado|schwer|pesante
+dark|oscuro|sombre|escuro|dunkel|scuro
+sweet|dulce|sucré|doce|süß|dolce
+dirty|sucio|sale|sujo|schmutzig|sporco
+easy|fácil|facile|fácil|einfach|facile
+wet|mojado|mouillé|molhado|nass|bagnato
+dry|seco|sec|seco|trocken|secco
+green|verde|vert|verde|grün|verde
+red|rojo|rouge|vermelho|rot|rosso
+blue|azul|bleu|azul|blau|blu
+yellow|amarillo|jaune|amarelo|gelb|giallo
+white|blanco|blanc|branco|weiß|bianco
+black|negro|noir|preto|schwarz|nero
+tired|cansado|fatigué|cansado|müde|stanco
+rich|rico|riche|rico|reich|ricco
+poor|pobre|pauvre|pobre|arm|povero`;
+
+// [english prompt, correct answer, trap word, what the trap really means]
+const FALSE_FRIENDS = {
+  es: [
+    ['embarrassed', 'avergonzado', 'embarazada', 'pregnant'],
+    ['library', 'biblioteca', 'librería', 'bookshop'],
+    ['exit', 'salida', 'éxito', 'success'],
+    ['carpet', 'alfombra', 'carpeta', 'folder'],
+    ['sensible', 'sensato', 'sensible', 'sensitive'],
+    ['rope', 'cuerda', 'ropa', 'clothes'],
+    ['large', 'grande', 'largo', 'long'],
+    ['soap', 'jabón', 'sopa', 'soup'],
+    ['fabric', 'tela', 'fábrica', 'factory'],
+    ['to realise', 'darse cuenta', 'realizar', 'to carry out'],
+    ['to record', 'grabar', 'recordar', 'to remember'],
+    ['lecture', 'conferencia', 'lectura', 'reading'],
+    ['parents', 'padres', 'parientes', 'relatives'],
+    ['costume', 'disfraz', 'costumbre', 'habit'],
+    ['deception', 'engaño', 'decepción', 'disappointment'],
+    ['constipated', 'estreñido', 'constipado', 'having a cold'],
+    ['success', 'éxito', 'suceso', 'event'],
+    ['dessert', 'postre', 'desierto', 'desert'],
+  ],
+  fr: [
+    ['library', 'bibliothèque', 'librairie', 'bookshop'],
+    ['sensible', 'raisonnable', 'sensible', 'sensitive'],
+    ['actually', 'en fait', 'actuellement', 'currently'],
+    ['eventually', 'finalement', 'éventuellement', 'possibly'],
+    ['coin', 'pièce', 'coin', 'corner'],
+    ['chair', 'chaise', 'chair', 'flesh'],
+    ['pain', 'douleur', 'pain', 'bread'],
+    ['deception', 'tromperie', 'déception', 'disappointment'],
+    ['to attend', 'assister à', 'attendre', 'to wait'],
+    ['journey', 'voyage', 'journée', 'day'],
+    ['large', 'grand', 'large', 'wide'],
+    ['lecture', 'conférence', 'lecture', 'reading'],
+    ['to rest', 'se reposer', 'rester', 'to stay'],
+    ['injury', 'blessure', 'injure', 'insult'],
+    ['to bless', 'bénir', 'blesser', 'to injure'],
+    ['location', 'emplacement', 'location', 'rental'],
+    ['fabric', 'tissu', 'fabrique', 'factory'],
+    ['shop', 'magasin', 'magazine', 'magazine'],
+    ['raisin', 'raisin sec', 'raisin', 'grape'],
+    ['cave', 'grotte', 'cave', 'cellar'],
+    ['to pass (an exam)', 'réussir', 'passer', 'to sit (an exam)'],
+  ],
+  pt: [
+    ['to pretend', 'fingir', 'pretender', 'to intend'],
+    ['to push', 'empurrar', 'puxar', 'to pull'],
+    ['exquisite', 'requintado', 'esquisito', 'weird'],
+    ['library', 'biblioteca', 'livraria', 'bookshop'],
+    ['parents', 'pais', 'parentes', 'relatives'],
+    ['lunch', 'almoço', 'lanche', 'snack'],
+    ['novel', 'romance', 'novela', 'soap opera'],
+    ['costume', 'fantasia', 'costume', 'habit'],
+    ['actually', 'na verdade', 'atualmente', 'currently'],
+    ['expert', 'especialista', 'esperto', 'clever'],
+    ['data', 'dados', 'data', 'date'],
+    ['prejudice', 'preconceito', 'prejuízo', 'loss'],
+    ['balcony', 'varanda', 'balcão', 'counter'],
+    ['college', 'faculdade', 'colégio', 'school'],
+    ['to attend', 'comparecer', 'atender', 'to answer (a call)'],
+    ['legend', 'lenda', 'legenda', 'subtitle'],
+    ['pasta', 'macarrão', 'pasta', 'folder'],
+  ],
+  de: [
+    ['gift', 'Geschenk', 'Gift', 'poison'],
+    ['to become', 'werden', 'bekommen', 'to get'],
+    ['chef', 'Koch', 'Chef', 'boss'],
+    ['brave', 'mutig', 'brav', 'well-behaved'],
+    ['also', 'auch', 'also', 'so, therefore'],
+    ['bald', 'kahl', 'bald', 'soon'],
+    ['fast', 'schnell', 'fast', 'almost'],
+    ['kind (friendly)', 'freundlich', 'Kind', 'child'],
+    ['art', 'Kunst', 'Art', 'type'],
+    ['map', 'Landkarte', 'Mappe', 'folder'],
+    ['sensible', 'vernünftig', 'sensibel', 'sensitive'],
+    ['to spend (money)', 'ausgeben', 'spenden', 'to donate'],
+    ['eventually', 'schließlich', 'eventuell', 'possibly'],
+    ['who', 'wer', 'wo', 'where'],
+    ['corn', 'Mais', 'Korn', 'grain'],
+    ['meaning', 'Bedeutung', 'Meinung', 'opinion'],
+  ],
+  it: [
+    ['library', 'biblioteca', 'libreria', 'bookshop'],
+    ['parents', 'genitori', 'parenti', 'relatives'],
+    ['fabric', 'tessuto', 'fabbrica', 'factory'],
+    ['camera', 'macchina fotografica', 'camera', 'room'],
+    ['actually', 'in realtà', 'attualmente', 'currently'],
+    ['eventually', 'alla fine', 'eventualmente', 'possibly'],
+    ['sensible', 'ragionevole', 'sensibile', 'sensitive'],
+    ['argument', 'litigio', 'argomento', 'topic'],
+    ['annoyed', 'infastidito', 'annoiato', 'bored'],
+    ['to pretend', 'fingere', 'pretendere', 'to demand'],
+    ['educated', 'istruito', 'educato', 'polite'],
+    ['cold', 'freddo', 'caldo', 'hot'],
+    ['rumour', 'diceria', 'rumore', 'noise'],
+    ['confetti', 'coriandoli', 'confetti', 'sugared almonds'],
+    ['magazine', 'rivista', 'magazzino', 'warehouse'],
+    ['factory', 'fabbrica', 'fattoria', 'farm'],
+  ],
+};
+
+// ---- helpers ----
+function lzHash(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0) ^ (h1 >>> 0);
+}
+function lzRng(seed) {
+  let a = typeof seed === 'string' ? lzHash(seed) : seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function lzShuffle(arr, rng) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function fold(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+
+const VOCAB = VOCAB_RAW.trim().split('\n').map(l => l.split('|'));
+const _banks = {};
+function bankFor(lang) {
+  if (_banks[lang]) return _banks[lang];
+  const col = LANGS[lang].col;
+  const vocab = VOCAB.map(r => ({ type: 'vocab', en: r[0], w: r[col] }));
+  const ff = (FALSE_FRIENDS[lang] || []).map(r => ({ type: 'ff', en: r[0], w: r[1], trap: r[2], trapEn: r[3] }));
+  const words = new Map(); // word -> meaning
+  for (const v of vocab) if (!words.has(v.w)) words.set(v.w, v.en);
+  for (const f of ff) {
+    if (!words.has(f.w)) words.set(f.w, f.en);
+    if (!words.has(f.trap)) words.set(f.trap, f.trapEn);
+  }
+  return (_banks[lang] = { vocab, ff, words });
+}
+
+// Pick n real words that look like `target`: same opening letters, similar length.
+function lookAlikes(target, lang, rng, n, excludeWords, excludeMeanings) {
+  const { words } = bankFor(lang);
+  const ft = fold(target), multi = target.includes(' ');
+  const scored = [];
+  for (const [w, m] of words) {
+    if (excludeWords.has(w) || excludeMeanings.has(m)) continue;
+    const f = fold(w);
+    if (f === ft) continue;
+    let p = 0; while (p < f.length && p < ft.length && f[p] === ft[p]) p++;
+    let s = Math.min(p, 4) * 3 + (f[0] === ft[0] ? 3 : 0) - Math.abs(f.length - ft.length) * 0.7;
+    if (f.slice(-1) === ft.slice(-1)) s += 1;
+    if (w.includes(' ') === multi) s += 2;
+    s += rng() * 2.5;
+    scored.push([s, w]);
+  }
+  scored.sort((a, b) => b[0] - a[0]);
+  const pool = scored.slice(0, Math.max(n, 6)).map(x => x[1]);
+  return lzShuffle(pool, rng).slice(0, n);
+}
+
+function buildQuestion(item, lang, qid) {
+  const rng = lzRng(qid);
+  const { words } = bankFor(lang);
+  const exW = new Set([item.w]), exM = new Set([item.en]);
+  let opts;
+  if (item.type === 'ff') {
+    exW.add(item.trap);
+    const a = lookAlikes(item.w, lang, rng, 1, exW, exM); a.forEach(w => exW.add(w));
+    const b = lookAlikes(item.trap, lang, rng, 1, exW, exM);
+    opts = [item.w, item.trap, ...a, ...b];
+  } else {
+    opts = [item.w, ...lookAlikes(item.w, lang, rng, 3, exW, exM)];
+  }
+  const options = lzShuffle(opts, rng).map(w => ({
+    w,
+    m: w === item.w ? item.en : (item.type === 'ff' && w === item.trap ? item.trapEn : words.get(w)),
+  }));
+  return { qid, lang, type: item.type, en: item.en, answer: item.w, trap: item.trap || null, trapEn: item.trapEn || null, options };
+}
+
+// Walk a fixed shuffled order of the bank so words don't repeat until the bank is used up.
+function pickSequence(list, key, start, count) {
+  const out = [];
+  for (let p = start; p < start + count; p++) {
+    const cycle = Math.floor(p / list.length);
+    const order = lzShuffle(list.map((_, i) => i), lzRng(key + ':' + cycle));
+    out.push(list[order[p % list.length]]);
+  }
+  return out;
+}
+
+const DAILY_SIZE = 10, DAILY_FF = 3, FF_SLOTS = [2, 5, 9];
+function dailySet(lang, dayNum, dateKey) {
+  const { vocab, ff } = bankFor(lang);
+  const n = Math.max(0, dayNum - 1);
+  const traps = pickSequence(ff, lang + ':ff', n * DAILY_FF, DAILY_FF);
+  const trapEn = new Set(traps.map(t => t.en));
+  const plain = [];
+  let p = n * (DAILY_SIZE - DAILY_FF), extra = 0;
+  while (plain.length < DAILY_SIZE - DAILY_FF) {
+    const [it] = pickSequence(vocab, lang + ':v', p + extra, 1);
+    extra++;
+    if (!trapEn.has(it.en) && !plain.some(x => x.en === it.en)) plain.push(it);
+  }
+  const items = [];
+  let ti = 0, vi = 0;
+  for (let i = 0; i < DAILY_SIZE; i++) items.push(FF_SLOTS.includes(i) ? traps[ti++] : plain[vi++]);
+  return items.map((it, i) => buildQuestion(it, lang, `${lang}:${dateKey}:${i}`));
+}
+
+function practiceQuestion(lang, seed) {
+  const { vocab, ff } = bankFor(lang);
+  const rng = lzRng(seed);
+  const item = rng() < 0.35 ? ff[(rng() * ff.length) | 0] : vocab[(rng() * vocab.length) | 0];
+  return buildQuestion(item, lang, 'p:' + seed);
+}
+
+// ---------------- storage ----------------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('lz.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('lz.' + k, JSON.stringify(v)); } catch {} },
+};
+function clientId() {
+  let id = store.get('cid', null);
+  if (!id) {
+    id = (crypto.randomUUID && crypto.randomUUID()) || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0; return (c === 'x' ? r : (r & 3) | 8).toString(16);
+    });
+    store.set('cid', id);
+  }
+  return id;
+}
+async function rpc(fn, body) {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
+
+// ---------------- dates ----------------
+function dateKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function dayNumber(key) {
+  const [y, m, d] = key.split('-').map(Number), [ly, lm, ld] = LAUNCH_DATE.split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ly, lm - 1, ld)) / 86400000) + 1;
+}
+function prettyDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// ---------------- base64url for quiz links ----------------
+function encodeQuiz(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decodeQuiz(s) {
+  try {
+    const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4);
+    const bin = atob(b64), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const o = JSON.parse(new TextDecoder().decode(bytes));
+    if (!o || !LANGS[o.l] || !o.e || !o.a || !Array.isArray(o.d) || o.d.length !== 3) return null;
+    return o;
+  } catch { return null; }
+}
+
+// ---------------- state ----------------
+const $ = id => document.getElementById(id);
+let lang = store.get('lang', 'es');
+if (!LANGS[lang]) lang = 'es';
+let mode = 'daily';
+let today = dateKey(new Date());
+let set = [], idx = 0, answers = [], totals = {};
+let current = null, answered = false;
+let practiceRun = 0, practiceSeen = 0;
+let custom = null;
+
+function dayState() { return store.get(`day.${lang}.${today}`, { answers: [] }); }
+function saveDayState() { store.set(`day.${lang}.${today}`, { answers }); }
+
+function renderLangs() {
+  const nav = $('langs'); nav.innerHTML = '';
+  for (const [code, L] of Object.entries(LANGS)) {
+    const b = document.createElement('button');
+    b.innerHTML = `${L.native} <small>${code.toUpperCase()}</small>`;
+    b.setAttribute('aria-pressed', String(code === lang));
+    b.setAttribute('aria-label', L.name);
+    b.onclick = () => { lang = code; store.set('lang', lang); custom = null; renderLangs(); start(mode === 'make' ? 'daily' : mode); };
+    nav.appendChild(b);
+  }
+}
+function renderMeta() {
+  const s = store.get('streak', { count: 0, last: '' });
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  $('streakNum').textContent = (s.last === today || s.last === dateKey(y)) ? s.count : 0;
+  $('pointsNum').textContent = store.get('points', 0).toLocaleString();
+}
+function addPoints(n) { store.set('points', store.get('points', 0) + n); renderMeta(); }
+
+function setModeButtons() {
+  $('modeDaily').setAttribute('aria-pressed', String(mode === 'daily'));
+  $('modePractice').setAttribute('aria-pressed', String(mode === 'practice'));
+  $('modeMake').setAttribute('aria-pressed', String(mode === 'make'));
+}
+function show(view) {
+  $('playView').hidden = view !== 'play';
+  $('summaryView').hidden = view !== 'summary';
+  $('makeView').hidden = view !== 'make';
+}
+
+async function start(m) {
+  mode = m; setModeButtons(); renderMeta();
+  today = dateKey(new Date());
+  if (m === 'make') { show('make'); prepMake(); return; }
+  if (m === 'practice') {
+    practiceRun = 0; practiceSeen = 0;
+    show('play'); $('progress').hidden = true; $('runLine').hidden = false;
+    nextPractice(); return;
+  }
+  // daily
+  set = dailySet(lang, dayNumber(today), today);
+  answers = dayState().answers || [];
+  $('progress').hidden = false; $('runLine').hidden = true;
+  if (answers.length >= set.length) { showSummary(); return; }
+  show('play');
+  idx = answers.length;
+  totals = {};
+  showQuestion(set[idx]);
+  const r = await rpc('lingo_totals', { p_qids: set.map(q => q.qid) });
+  if (Array.isArray(r)) { r.forEach(row => { totals[row.qid] = Number(row.total); }); if (!answered && current) renderPromptNote(); }
+}
+
+function nextPractice() {
+  const seed = 'p' + Date.now() + ':' + Math.random();
+  showQuestion(practiceQuestion(lang, seed));
+}
+
+function renderProgress() {
+  const p = $('progress'); p.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const s = document.createElement('span');
+    if (i < answers.length) s.className = answers[i].ok ? 'ok' : 'bad';
+    else if (i === idx) s.className = 'now';
+    p.appendChild(s);
+  }
+}
+function renderPromptNote() {
+  const q = current;
+  if (custom) { $('promptNote').innerHTML = custom.by ? `A quiz from <b></b>. Pick the right translation.` : 'Pick the right translation.'; if (custom.by) $('promptNote').querySelector('b').textContent = custom.by; return; }
+  const t = totals[q.qid];
+  $('promptNote').innerHTML = t ? `<b>${t.toLocaleString()}</b> ${t === 1 ? 'player has' : 'players have'} answered. Pick the right one.` : 'Pick the right translation.';
+}
+
+function showQuestion(q) {
+  current = q; answered = false;
+  $('card').classList.remove('answered');
+  $('word').textContent = q.en;
+  $('dirLabel').textContent = `English → ${LANGS[q.lang].name}`;
+  if (custom) $('qLabel').textContent = 'Friend quiz';
+  else if (mode === 'daily') $('qLabel').textContent = `${idx + 1} / ${set.length}`;
+  else $('qLabel').textContent = 'Practice';
+  $('stamp').hidden = true;
+  $('explain').textContent = '';
+  $('nextRow').hidden = true;
+  if (mode === 'daily' && !custom) renderProgress();
+  if (mode === 'practice') $('runLine').innerHTML = `Run: <b>${practiceRun}</b> right in a row · ${practiceSeen} answered`;
+  renderPromptNote();
+  const box = $('options'); box.innerHTML = '';
+  q.options.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = '<span class="fill"></span><span class="mark"></span><span class="w"></span><span class="m"></span><span class="pct"></span>';
+    b.querySelector('.w').textContent = o.w;
+    b.onclick = () => answer(o.w);
+    box.appendChild(b);
+  });
+}
+
+async function answer(choice) {
+  if (answered) return;
+  answered = true;
+  $('card').classList.add('answered');
+  const q = current, ok = choice === q.answer;
+  const buttons = [...$('options').children];
+  buttons.forEach((b, i) => {
+    const o = q.options[i];
+    b.disabled = true;
+    if (o.m) b.querySelector('.m').textContent = '= ' + o.m;
+    if (o.w === q.answer) { b.classList.add('right'); b.querySelector('.mark').textContent = '✓'; }
+    else if (o.w === choice) { b.classList.add('wrong'); b.querySelector('.mark').textContent = '✕'; }
+  });
+  stamp(ok, null);
+  explain(q, choice, ok, null);
+
+  if (mode === 'daily' && !custom) {
+    answers.push({ c: choice, ok }); saveDayState();
+    if (ok) addPoints(10);
+    renderProgress();
+    $('nextBtn').textContent = answers.length >= set.length ? 'See my score' : 'Next word';
+  } else if (custom) {
+    $('nextBtn').textContent = "Play today's ten";
+  } else {
+    practiceSeen++; practiceRun = ok ? practiceRun + 1 : 0;
+    if (ok) addPoints(5);
+    $('runLine').innerHTML = `Run: <b>${practiceRun}</b> right in a row · ${practiceSeen} answered`;
+    $('nextBtn').textContent = 'Next word';
+  }
+  $('nextRow').hidden = false;
+  $('nextBtn').focus({ preventScroll: true });
+
+  // crowd stats for daily and friend quizzes
+  if ((mode === 'daily' || custom) && !q.qid.startsWith('p:')) {
+    const rows = await rpc('lingo_record_answer', { p_qid: q.qid, p_client: clientId(), p_choice: choice, p_correct: ok });
+    if (Array.isArray(rows) && rows.length && current === q) {
+      const counts = {}; let total = 0;
+      rows.forEach(r => { counts[r.opt] = Number(r.votes); total += Number(r.votes); });
+      if (total > 0) {
+        buttons.forEach((b, i) => {
+          const pct = Math.round(((counts[q.options[i].w] || 0) / total) * 100);
+          b.querySelector('.fill').style.width = pct + '%';
+          b.querySelector('.pct').textContent = pct + '%';
+        });
+        const fooled = Math.round(((total - (counts[q.answer] || 0)) / total) * 100);
+        stamp(ok, { fooled, total });
+        explain(q, choice, ok, { fooled, total });
+      }
+    }
+  }
+}
+
+function stamp(ok, crowd) {
+  const s = $('stamp');
+  s.className = 'stamp ' + (ok ? 'good' : 'bad');
+  let sub = '';
+  if (crowd && crowd.total > 1) sub = ok ? `${100 - crowd.fooled}% got it` : `like ${crowd.fooled}% of players`;
+  s.innerHTML = (ok ? 'NOT FOOLED' : 'FOOLED') + (sub ? `<small>${sub}</small>` : '');
+  s.hidden = false;
+  // restart the slam animation
+  s.style.animation = 'none'; void s.offsetWidth; s.style.animation = '';
+}
+function explain(q, choice, ok, crowd) {
+  const el = $('explain'); el.innerHTML = '';
+  const b = t => { const x = document.createElement('b'); x.textContent = t; return x; };
+  const add = t => el.appendChild(document.createTextNode(t));
+  const picked = q.options.find(o => o.w === choice);
+  if (q.type === 'ff') {
+    el.appendChild(b(q.trap)); add(` looks like “${q.en}” but means `); el.appendChild(b(q.trapEn)); add('. ');
+    add(`“${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+  } else if (!ok && picked && picked.m) {
+    el.appendChild(b(choice)); add(` means “${picked.m}”. “${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+  } else if (!ok) {
+    add(`“${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+  } else {
+    add(`Right: “${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+  }
+  if (crowd && crowd.total > 1) add(` ${crowd.fooled}% of ${crowd.total.toLocaleString()} players were fooled.`);
+}
+
+function next() {
+  if (custom) { custom = null; history.replaceState(null, '', location.pathname); start('daily'); return; }
+  if (mode === 'practice') { nextPractice(); return; }
+  if (answers.length >= set.length) { finishDay(); return; }
+  idx = answers.length;
+  showQuestion(set[idx]);
+}
+
+function finishDay() {
+  const s = store.get('streak', { count: 0, last: '' });
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (s.last !== today) {
+    s.count = s.last === dateKey(y) ? s.count + 1 : 1; s.last = today; store.set('streak', s);
+    if (answers.every(a => a.ok)) addPoints(20);
+  }
+  renderMeta();
+  showSummary();
+}
+
+function showSummary() {
+  show('summary');
+  const score = answers.filter(a => a.ok).length;
+  $('sumDir').textContent = `Today's ten · ${LANGS[lang].name}`;
+  $('sumDate').textContent = prettyDate(today);
+  $('sumScore').innerHTML = `${score}<span>/${set.length}</span>`;
+  $('sumTiles').innerHTML = answers.map(a => `<i class="${a.ok ? '' : 'bad'}"></i>`).join('');
+  const fooled = set.length - score;
+  $('sumNote').textContent = fooled === 0 ? 'Not fooled once. A new ten arrives tomorrow.' : `Fooled ${fooled} time${fooled > 1 ? 's' : ''}. A new ten arrives tomorrow.`;
+  const list = $('sumReview'); list.innerHTML = '';
+  set.forEach((q, i) => {
+    const a = answers[i]; if (!a) return;
+    const li = document.createElement('li'); if (!a.ok) li.className = 'bad';
+    const s1 = document.createElement('span'); s1.textContent = q.en + ' →';
+    const s2 = document.createElement('b'); s2.textContent = q.answer;
+    li.append(s1, s2);
+    if (!a.ok) { const s3 = document.createElement('span'); s3.textContent = `(you chose ${a.c})`; s3.style.color = 'var(--muted)'; li.append(s3); }
+    list.appendChild(li);
+  });
+  const text = shareText(score);
+  $('waShare').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+  $('xShare').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+  $('copyShare').onclick = () => copyText(text, $('copyShare'), 'Copy result');
+}
+function shareText(score) {
+  const tiles = answers.map(a => (a.ok ? '🟩' : '🟥')).join('');
+  const fooled = set.length - score;
+  return `Lingoezy · ${LANGS[lang].name} · ${prettyDate(today)}\n${tiles} ${score}/${set.length}\n${fooled ? `Fooled ${fooled} time${fooled > 1 ? 's' : ''}. Can you beat me?` : 'Not fooled once.'}\n${SITE}`;
+}
+async function copyText(text, btn, label) {
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Select and copy'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
+// ---------------- make a quiz ----------------
+function prepMake() {
+  const sel = $('mkLang');
+  if (!sel.options.length) for (const [c, L] of Object.entries(LANGS)) sel.add(new Option(L.name, c));
+  sel.value = lang;
+  $('mkErr').textContent = '';
+}
+$('mkSuggest').onclick = () => {
+  const l = $('mkLang').value, ans = $('mkAns').value.trim();
+  if (!ans) { $('mkErr').textContent = 'Type the correct translation first, then ask for decoys.'; return; }
+  const ex = new Set([ans]);
+  const picks = lookAlikes(ans, l, lzRng('mk' + Date.now()), 3, ex, new Set([$('mkEn').value.trim().toLowerCase()]));
+  ['mkD1', 'mkD2', 'mkD3'].forEach((id, i) => { if (picks[i]) $(id).value = picks[i]; });
+  $('mkErr').textContent = '';
+};
+$('makeForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const l = $('mkLang').value, en = $('mkEn').value.trim(), a = $('mkAns').value.trim();
+  const d = ['mkD1', 'mkD2', 'mkD3'].map(id => $(id).value.trim());
+  const by = $('mkBy').value.trim();
+  if (!en || !a) { $('mkErr').textContent = 'Add the English word and its correct translation.'; return; }
+  if (d.some(x => !x)) { $('mkErr').textContent = 'Fill in all three decoys, or tap “Suggest look-alike decoys”.'; return; }
+  const all = [a, ...d].map(x => fold(x));
+  if (new Set(all).size !== 4) { $('mkErr').textContent = 'Each answer must be different from the others.'; return; }
+  $('mkErr').textContent = '';
+  const code = encodeQuiz({ l, e: en, a, d, by: by || undefined });
+  const url = SITE.replace(/#.*$/, '') + '#q-' + code;
+  $('mkLink').value = url;
+  $('mkWa').href = 'https://wa.me/?text=' + encodeURIComponent(`Can you translate “${en}” into ${LANGS[l].name}? Most people get fooled 👀\n${url}`);
+  $('mkOut').hidden = false;
+  $('mkCopy').onclick = () => copyText(url, $('mkCopy'), 'Copy link');
+  $('mkTry').onclick = () => playCustom({ l, e: en, a, d, by: by || undefined });
+  store.set('made', store.get('made', 0) + 1);
+});
+
+function playCustom(o) {
+  custom = o;
+  lang = o.l; renderLangs();
+  mode = 'daily'; setModeButtons();
+  const { words } = bankFor(o.l);
+  const qid = 'c:' + lzHash(JSON.stringify([o.l, o.e, o.a, o.d]));
+  const opts = lzShuffle([o.a, ...o.d], lzRng(qid)).map(w => ({ w, m: w === o.a ? o.e : (words.get(w) || '') }));
+  show('play'); $('progress').hidden = true; $('runLine').hidden = true;
+  showQuestion({ qid, lang: o.l, type: 'custom', en: o.e, answer: o.a, trap: null, trapEn: null, options: opts });
+}
+
+// ---------------- wiring ----------------
+$('modeDaily').onclick = () => { custom = null; start('daily'); };
+$('modePractice').onclick = () => { custom = null; start('practice'); };
+$('modeMake').onclick = () => { custom = null; start('make'); };
+$('nextBtn').onclick = next;
+$('sumPractice').onclick = () => start('practice');
+$('sumMake').onclick = () => start('make');
+document.addEventListener('keydown', e => {
+  if (!$('playView').hidden && !answered && ['1', '2', '3', '4'].includes(e.key) && current) answer(current.options[Number(e.key) - 1].w);
+  else if (!$('playView').hidden && answered && e.key === 'Enter' && document.activeElement !== $('nextBtn')) next();
+});
+setInterval(() => { if (dateKey(new Date()) !== today && mode === 'daily' && !custom && (answered || !$('summaryView').hidden)) start('daily'); }, 30000);
+
+renderLangs();
+const h = location.hash.slice(1);
+const fromLink = h.startsWith('q-') ? decodeQuiz(h.slice(2)) : null;
+if (fromLink) playCustom(fromLink); else start('daily');
+</script>
