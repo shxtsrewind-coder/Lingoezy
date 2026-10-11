@@ -7,18 +7,24 @@ A "did you get fooled?" translation quiz for [bgameworld.com](https://bgameworld
 - **Make a quiz:** write your own word and decoys and get a link to send to friends.
 - Points, day streaks, a FOOLED / NOT FOOLED stamp with what every option really means, and result sharing to WhatsApp and X.
 
-The whole game is `index.html`, with no build step.
+The whole game is `public/index.html`, with no build step.
 
 ## Deploy
 
-Connect this repo to Cloudflare Pages (no build command, output directory `/`) and add the custom domain `lingoezy.bgameworld.com`. Friend-quiz links and share text already point there.
+It deploys as a Cloudflare Worker with static assets, the same as the other bgameworld games. `wrangler.jsonc` uploads only `public/`.
 
-Set `LAUNCH_DATE` near the top of the script to your launch day.
+1. In Cloudflare, connect this repo to the `lingoezy` Worker (Workers & Pages → lingoezy → Settings → Build). Leave the build command empty; the deploy command is `npx wrangler deploy`. Every push to `main` then redeploys.
+2. Add the custom domain `lingoezy.bgameworld.com`. Friend-quiz links and share text already point there.
+3. In Google Search Console, submit `https://lingoezy.bgameworld.com/sitemap.xml`.
+
+`LAUNCH_DATE` near the top of the script is the day that counts as No. 1 (set to 11 Oct 2026, the day it went on bgameworld.com).
+
+`public/` also holds the SEO and home-screen files: `og-image.jpg` (share preview), favicons and app icons, `site.webmanifest`, `robots.txt` and `sitemap.xml`. The title, description, share cards and structured data are in the `<head>` of `public/index.html`.
 
 ## Crowd stats (optional)
 
 1. Open Supabase, go to SQL editor, and run `supabase.sql`.
-2. In `index.html`, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (Project Settings → API).
+2. In `public/index.html`, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (Project Settings → API).
 
 This shows "5,905 players have answered", the percentage bars on each answer, and "63% were fooled". Until it's set up, those numbers stay hidden. The game never makes them up.
 

@@ -1,0 +1,31 @@
+{
+  "name": "Lingoezy — Daily False Friends Quiz",
+  "short_name": "Lingoezy",
+  "description": "Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten new words every day.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#dde4ea",
+  "theme_color": "#dde4ea",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

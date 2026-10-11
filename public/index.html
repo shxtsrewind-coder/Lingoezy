@@ -1,4 +1,68 @@
-<title>Lingoezy</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- Primary SEO -->
+<title>Lingoezy — Daily False Friends Translation Quiz</title>
+<meta name="description" content="Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day in Spanish, French, Portuguese, German or Italian.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://lingoezy.bgameworld.com/">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#dde4ea">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10141b">
+<meta name="author" content="bgameworld.com">
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Lingoezy">
+<meta property="og:title" content="Lingoezy — Daily False Friends Translation Quiz">
+<meta property="og:description" content="Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten new words every day.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lingoezy.bgameworld.com/">
+<meta property="og:image" content="https://lingoezy.bgameworld.com/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Lingoezy — an index card reading EMBARAZADA with a red FOOLED stamp">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lingoezy — Daily False Friends Translation Quiz">
+<meta name="twitter:description" content="Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten new words every day.">
+<meta name="twitter:image" content="https://lingoezy.bgameworld.com/og-image.jpg">
+<meta name="twitter:image:alt" content="Lingoezy — an index card reading EMBARAZADA with a red FOOLED stamp">
+
+<!-- Icons & home-screen install -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lingoezy">
+<meta name="application-name" content="Lingoezy">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Lingoezy",
+  "url": "https://lingoezy.bgameworld.com/",
+  "image": "https://lingoezy.bgameworld.com/og-image.jpg",
+  "description": "Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day in Spanish, French, Portuguese, German or Italian.",
+  "genre": ["Quiz", "Word Game", "Language"],
+  "gamePlatform": "Web browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any (Web Browser)",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "publisher": { "@type": "Organization", "name": "bgameworld.com", "url": "https://bgameworld.com/" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Figtree:wght@400;500;600;700&family=Saira+Stencil+One&display=swap">
@@ -168,6 +232,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .linkbox input { font-size: 13px; }
 .hint { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.45; }
 </style>
+</head>
+<body>
+<noscript>
+  <h1>Lingoezy — a free daily translation quiz</h1>
+  <p>Pick the right translation from four real words that look alike. Some are false friends: <em>embarazada</em> looks like “embarrassed” but means pregnant. Ten words a day in Spanish, French, Brazilian Portuguese, German or Italian, the same for every player, plus endless practice and quizzes you can write for your friends. Lingoezy needs JavaScript to play.</p>
+  <p>More free games at <a href="https://bgameworld.com/">bgameworld.com</a>: <a href="https://wordezy.bgameworld.com/">Wordezy</a>, <a href="https://wordezysearch.bgameworld.com/">Wordezy Search</a>, <a href="https://wordezyscramble.bgameworld.com/">Wordezy Scramble</a>, <a href="https://wordezyladder.bgameworld.com/">Wordezy Ladder</a>, <a href="https://sortezy.bgameworld.com/">Sortezy</a>, <a href="https://linkezy.bgameworld.com/">Linkezy</a>, <a href="https://whenandwhere.bgameworld.com/">When &amp; Where</a>.</p>
+</noscript>
 
 <div class="app">
   <header class="top">
@@ -256,7 +327,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 // Fill these in on bgameworld to turn on real crowd stats (see supabase.sql).
 const SUPABASE_URL = '';
 const SUPABASE_ANON_KEY = '';
-const LAUNCH_DATE = '2026-10-09';
+const LAUNCH_DATE = '2026-10-11';
 const SITE = /bgameworld\.com$/.test(location.hostname) ? location.origin + location.pathname : 'https://lingoezy.bgameworld.com/';
 
 // Lingoezy core: word bank, false-friend traps, look-alike decoys, daily set.
@@ -1060,3 +1131,5 @@ const h = location.hash.slice(1);
 const fromLink = h.startsWith('q-') ? decodeQuiz(h.slice(2)) : null;
 if (fromLink) playCustom(fromLink); else start('daily');
 </script>
+</body>
+</html>
