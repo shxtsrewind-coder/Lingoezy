@@ -2,7 +2,7 @@
 
 A "did you get fooled?" translation quiz for [bgameworld.com](https://bgameworld.com). Pick the right translation from four real words that look alike. Some of them are false friends: *embarazada* looks like "embarrassed" but means pregnant.
 
-- **Today's ten:** 10 words a day in Spanish, French, Brazilian Portuguese, German or Italian. Three of them are false-friend traps. Everyone gets the same set.
+- **Today's ten:** 10 words a day, each in a random direction between English, Spanish, French, Brazilian Portuguese, German and Italian (for example Italian to French, then English to Portuguese). There's no language picker. Three of the ten are false-friend traps, which always start from English. Everyone gets the same set.
 - **Practice:** endless random words.
 - **Make a quiz:** write your own word and decoys and get a link to send to friends.
 - Points, day streaks, a FOOLED / NOT FOOLED stamp with what every option really means, and result sharing to WhatsApp and X.

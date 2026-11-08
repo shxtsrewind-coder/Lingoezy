@@ -6,7 +6,7 @@
 
 <!-- Primary SEO -->
 <title>Lingoezy — Daily False Friends Translation Quiz</title>
-<meta name="description" content="Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day in Spanish, French, Portuguese, German or Italian.">
+<meta name="description" content="Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day, each between two random languages: English, Spanish, French, Portuguese, German and Italian.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://lingoezy.bgameworld.com/">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
@@ -51,7 +51,7 @@
   "name": "Lingoezy",
   "url": "https://lingoezy.bgameworld.com/",
   "image": "https://lingoezy.bgameworld.com/og-image.jpg",
-  "description": "Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day in Spanish, French, Portuguese, German or Italian.",
+  "description": "Pick the right translation from four look-alike words, and don't get fooled by false friends. Ten words a day, each between two random languages: English, Spanish, French, Portuguese, German and Italian.",
   "genre": ["Quiz", "Word Game", "Language"],
   "gamePlatform": "Web browser",
   "applicationCategory": "Game",
@@ -236,7 +236,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 <body>
 <noscript>
   <h1>Lingoezy — a free daily translation quiz</h1>
-  <p>Pick the right translation from four real words that look alike. Some are false friends: <em>embarazada</em> looks like “embarrassed” but means pregnant. Ten words a day in Spanish, French, Brazilian Portuguese, German or Italian, the same for every player, plus endless practice and quizzes you can write for your friends. Lingoezy needs JavaScript to play.</p>
+  <p>Pick the right translation from four real words that look alike. Some are false friends: <em>embarazada</em> looks like “embarrassed” but means pregnant. Ten words a day, each from one random language into another, across English, Spanish, French, Brazilian Portuguese, German and Italian, the same for every player, plus endless practice and quizzes you can write for your friends. Lingoezy needs JavaScript to play.</p>
   <p>More free games at <a href="https://bgameworld.com/">bgameworld.com</a>: <a href="https://wordezy.bgameworld.com/">Wordezy</a>, <a href="https://wordezysearch.bgameworld.com/">Wordezy Search</a>, <a href="https://wordezyscramble.bgameworld.com/">Wordezy Scramble</a>, <a href="https://wordezyladder.bgameworld.com/">Wordezy Ladder</a>, <a href="https://sortezy.bgameworld.com/">Sortezy</a>, <a href="https://linkezy.bgameworld.com/">Linkezy</a>, <a href="https://whenandwhere.bgameworld.com/">When &amp; Where</a>.</p>
 </noscript>
 
@@ -249,7 +249,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     </div>
   </header>
 
-  <nav class="langs" id="langs" aria-label="Language"></nav>
   <nav class="modes" aria-label="Mode">
     <button id="modeDaily" aria-pressed="true">Today's ten</button>
     <button id="modePractice" aria-pressed="false">Practice</button>
@@ -260,7 +259,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     <div class="progress" id="progress"></div>
     <div class="run" id="runLine" hidden></div>
     <article class="card" id="card" aria-live="polite">
-      <div class="card-head"><span class="dir" id="dirLabel">English → Spanish</span><span id="qLabel">1 / 10</span></div>
+      <div class="card-head"><span class="dir" id="dirLabel">Italian → French</span><span id="qLabel">1 / 10</span></div>
       <div class="headword" id="word"></div>
       <div class="prompt-note" id="promptNote">Pick the right translation.</div>
       <div class="stamp" id="stamp" hidden></div>
@@ -274,7 +273,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
   <section id="summaryView" hidden>
     <article class="card summary" id="summaryCard">
-      <div class="card-head" style="margin-left:-58px;margin-right:-18px;margin-top:-22px"><span class="dir" id="sumDir">Spanish</span><span id="sumDate"></span></div>
+      <div class="card-head" style="margin-left:-58px;margin-right:-18px;margin-top:-22px"><span class="dir" id="sumDir">Mixed languages</span><span id="sumDate"></span></div>
       <div class="score" id="sumScore">0<span>/10</span></div>
       <div class="tiles" id="sumTiles"></div>
       <p class="explain" id="sumNote"></p>
@@ -294,7 +293,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   <section id="makeView" hidden>
     <form class="form" id="makeForm" novalidate>
       <p class="hint">Write one word, its translation and three decoys that look convincing. You get a link that anyone can open to try it.</p>
-      <div class="field"><label for="mkLang">Language</label><select id="mkLang"></select></div>
+      <div class="field"><label for="mkLang">Translate into</label><select id="mkLang"></select></div>
       <div class="field"><label for="mkEn">English word</label><input id="mkEn" maxlength="40" placeholder="embarrassed" autocomplete="off"></div>
       <div class="field"><label for="mkAns">Correct translation</label><input id="mkAns" maxlength="40" placeholder="avergonzado" autocomplete="off"></div>
       <div class="field">
@@ -333,6 +332,7 @@ const SITE = /bgameworld\.com$/.test(location.hostname) ? location.origin + loca
 // Lingoezy core: word bank, false-friend traps, look-alike decoys, daily set.
 
 const LANGS = {
+  en: { name: 'English', native: 'English', col: 0 },
   es: { name: 'Spanish', native: 'Español', col: 1 },
   fr: { name: 'French', native: 'Français', col: 2 },
   pt: { name: 'Portuguese', native: 'Português', col: 3 },
@@ -710,24 +710,57 @@ function lookAlikes(target, lang, rng, n, excludeWords, excludeMeanings) {
   return lzShuffle(pool, rng).slice(0, n);
 }
 
-function buildQuestion(item, lang, qid) {
-  const rng = lzRng(qid);
-  const { words } = bankFor(lang);
-  const exW = new Set([item.w]), exM = new Set([item.en]);
+// Every word in the bank exists in all six languages, so a question can go from any language to any other.
+const CODES = Object.keys(LANGS);
+const TARGETS = CODES.filter(c => c !== 'en');
+const ROW_BY_EN = new Map(VOCAB.map(r => [r[0], r]));
+const ALL_FF = TARGETS.flatMap(l => (FALSE_FRIENDS[l] || []).map(r => ({ type: 'ff', lang: l, en: r[0], w: r[1], trap: r[2], trapEn: r[3] })));
+const VOCAB_ITEMS = VOCAB.map(r => ({ type: 'vocab', en: r[0] }));
+
+// Pick a direction for an item. False friends always start from English (the trap looks like the English word);
+// other words go between two random languages, never where the answer is spelled the same as the word shown.
+function pickPair(item, rng) {
+  if (item.type === 'ff') return ['en', item.lang];
+  const row = ROW_BY_EN.get(item.en);
+  for (let t = 0; t < 30; t++) {
+    const from = CODES[(rng() * CODES.length) | 0], to = CODES[(rng() * CODES.length) | 0];
+    if (from === to) continue;
+    if (fold(row[LANGS[from].col]) === fold(row[LANGS[to].col])) continue;
+    return [from, to];
+  }
+  return ['en', TARGETS[(rng() * TARGETS.length) | 0]];
+}
+
+// What a word means, written in the language the question was asked in (with English alongside).
+function meaningIn(en, from) {
+  if (!en) return '';
+  if (from === 'en') return en;
+  const row = ROW_BY_EN.get(en);
+  const w = row ? row[LANGS[from].col] : '';
+  return w && fold(w) !== fold(en) ? `${w} (${en})` : en;
+}
+
+function buildQuestion(item, from, to, qid) {
+  const rng = lzRng(qid + ':o');
+  const { words } = bankFor(to);
+  const row = ROW_BY_EN.get(item.en);
+  const answer = item.type === 'ff' ? item.w : row[LANGS[to].col];
+  const src = item.type === 'ff' || from === 'en' ? item.en : row[LANGS[from].col];
+  const exW = new Set([answer]), exM = new Set([item.en]);
   let opts;
   if (item.type === 'ff') {
     exW.add(item.trap);
-    const a = lookAlikes(item.w, lang, rng, 1, exW, exM); a.forEach(w => exW.add(w));
-    const b = lookAlikes(item.trap, lang, rng, 1, exW, exM);
-    opts = [item.w, item.trap, ...a, ...b];
+    const x = lookAlikes(answer, to, rng, 1, exW, exM); x.forEach(w => exW.add(w));
+    const y = lookAlikes(item.trap, to, rng, 1, exW, exM);
+    opts = [answer, item.trap, ...x, ...y];
   } else {
-    opts = [item.w, ...lookAlikes(item.w, lang, rng, 3, exW, exM)];
+    opts = [answer, ...lookAlikes(answer, to, rng, 3, exW, exM)];
   }
-  const options = lzShuffle(opts, rng).map(w => ({
-    w,
-    m: w === item.w ? item.en : (item.type === 'ff' && w === item.trap ? item.trapEn : words.get(w)),
-  }));
-  return { qid, lang, type: item.type, en: item.en, answer: item.w, trap: item.trap || null, trapEn: item.trapEn || null, options };
+  const options = lzShuffle(opts, rng).map(w => {
+    const en = w === answer ? item.en : (item.type === 'ff' && w === item.trap ? item.trapEn : words.get(w));
+    return { w, m: meaningIn(en, from) };
+  });
+  return { qid, from, to, lang: to, type: item.type, src, en: item.en, answer, trap: item.trap || null, trapEn: item.trapEn || null, options };
 }
 
 // Walk a fixed shuffled order of the bank so words don't repeat until the bank is used up.
@@ -741,30 +774,34 @@ function pickSequence(list, key, start, count) {
   return out;
 }
 
+// Today's ten: the same words and the same random directions for every player.
 const DAILY_SIZE = 10, DAILY_FF = 3, FF_SLOTS = [2, 5, 9];
-function dailySet(lang, dayNum, dateKey) {
-  const { vocab, ff } = bankFor(lang);
+function dailySet(dayNum, dateKey) {
   const n = Math.max(0, dayNum - 1);
-  const traps = pickSequence(ff, lang + ':ff', n * DAILY_FF, DAILY_FF);
+  const traps = pickSequence(ALL_FF, 'mix:ff', n * DAILY_FF, DAILY_FF);
   const trapEn = new Set(traps.map(t => t.en));
   const plain = [];
   let p = n * (DAILY_SIZE - DAILY_FF), extra = 0;
   while (plain.length < DAILY_SIZE - DAILY_FF) {
-    const [it] = pickSequence(vocab, lang + ':v', p + extra, 1);
+    const [it] = pickSequence(VOCAB_ITEMS, 'mix:v', p + extra, 1);
     extra++;
     if (!trapEn.has(it.en) && !plain.some(x => x.en === it.en)) plain.push(it);
   }
   const items = [];
   let ti = 0, vi = 0;
   for (let i = 0; i < DAILY_SIZE; i++) items.push(FF_SLOTS.includes(i) ? traps[ti++] : plain[vi++]);
-  return items.map((it, i) => buildQuestion(it, lang, `${lang}:${dateKey}:${i}`));
+  return items.map((it, i) => {
+    const qid = `mix:${dateKey}:${i}`;
+    const [from, to] = pickPair(it, lzRng(qid + ':pair'));
+    return buildQuestion(it, from, to, qid);
+  });
 }
 
-function practiceQuestion(lang, seed) {
-  const { vocab, ff } = bankFor(lang);
+function practiceQuestion(seed) {
   const rng = lzRng(seed);
-  const item = rng() < 0.35 ? ff[(rng() * ff.length) | 0] : vocab[(rng() * vocab.length) | 0];
-  return buildQuestion(item, lang, 'p:' + seed);
+  const item = rng() < 0.3 ? ALL_FF[(rng() * ALL_FF.length) | 0] : VOCAB_ITEMS[(rng() * VOCAB_ITEMS.length) | 0];
+  const [from, to] = pickPair(item, rng);
+  return buildQuestion(item, from, to, 'p:' + seed);
 }
 
 // ---------------- storage ----------------
@@ -816,15 +853,13 @@ function decodeQuiz(s) {
     const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4);
     const bin = atob(b64), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
     const o = JSON.parse(new TextDecoder().decode(bytes));
-    if (!o || !LANGS[o.l] || !o.e || !o.a || !Array.isArray(o.d) || o.d.length !== 3) return null;
+    if (!o || !TARGETS.includes(o.l) || !o.e || !o.a || !Array.isArray(o.d) || o.d.length !== 3) return null;
     return o;
   } catch { return null; }
 }
 
 // ---------------- state ----------------
 const $ = id => document.getElementById(id);
-let lang = store.get('lang', 'es');
-if (!LANGS[lang]) lang = 'es';
 let mode = 'daily';
 let today = dateKey(new Date());
 let set = [], idx = 0, answers = [], totals = {};
@@ -832,20 +867,9 @@ let current = null, answered = false;
 let practiceRun = 0, practiceSeen = 0;
 let custom = null;
 
-function dayState() { return store.get(`day.${lang}.${today}`, { answers: [] }); }
-function saveDayState() { store.set(`day.${lang}.${today}`, { answers }); }
+function dayState() { return store.get(`day.mix.${today}`, { answers: [] }); }
+function saveDayState() { store.set(`day.mix.${today}`, { answers }); }
 
-function renderLangs() {
-  const nav = $('langs'); nav.innerHTML = '';
-  for (const [code, L] of Object.entries(LANGS)) {
-    const b = document.createElement('button');
-    b.innerHTML = `${L.native} <small>${code.toUpperCase()}</small>`;
-    b.setAttribute('aria-pressed', String(code === lang));
-    b.setAttribute('aria-label', L.name);
-    b.onclick = () => { lang = code; store.set('lang', lang); custom = null; renderLangs(); start(mode === 'make' ? 'daily' : mode); };
-    nav.appendChild(b);
-  }
-}
 function renderMeta() {
   const s = store.get('streak', { count: 0, last: '' });
   const y = new Date(); y.setDate(y.getDate() - 1);
@@ -875,7 +899,7 @@ async function start(m) {
     nextPractice(); return;
   }
   // daily
-  set = dailySet(lang, dayNumber(today), today);
+  set = dailySet(dayNumber(today), today);
   answers = dayState().answers || [];
   $('progress').hidden = false; $('runLine').hidden = true;
   if (answers.length >= set.length) { showSummary(); return; }
@@ -889,7 +913,7 @@ async function start(m) {
 
 function nextPractice() {
   const seed = 'p' + Date.now() + ':' + Math.random();
-  showQuestion(practiceQuestion(lang, seed));
+  showQuestion(practiceQuestion(seed));
 }
 
 function renderProgress() {
@@ -911,8 +935,9 @@ function renderPromptNote() {
 function showQuestion(q) {
   current = q; answered = false;
   $('card').classList.remove('answered');
-  $('word').textContent = q.en;
-  $('dirLabel').textContent = `English → ${LANGS[q.lang].name}`;
+  $('word').textContent = q.src;
+  $('word').lang = q.from;
+  $('dirLabel').textContent = `${LANGS[q.from].name} → ${LANGS[q.to].name}`;
   if (custom) $('qLabel').textContent = 'Friend quiz';
   else if (mode === 'daily') $('qLabel').textContent = `${idx + 1} / ${set.length}`;
   else $('qLabel').textContent = 'Practice';
@@ -928,6 +953,7 @@ function showQuestion(q) {
     b.className = 'opt';
     b.innerHTML = '<span class="fill"></span><span class="mark"></span><span class="w"></span><span class="m"></span><span class="pct"></span>';
     b.querySelector('.w').textContent = o.w;
+    b.querySelector('.w').lang = q.to;
     b.onclick = () => answer(o.w);
     box.appendChild(b);
   });
@@ -1001,14 +1027,15 @@ function explain(q, choice, ok, crowd) {
   const add = t => el.appendChild(document.createTextNode(t));
   const picked = q.options.find(o => o.w === choice);
   if (q.type === 'ff') {
-    el.appendChild(b(q.trap)); add(` looks like “${q.en}” but means `); el.appendChild(b(q.trapEn)); add('. ');
-    add(`“${q.en}” is `); el.appendChild(b(q.answer)); add('.');
-  } else if (!ok && picked && picked.m) {
-    el.appendChild(b(choice)); add(` means “${picked.m}”. “${q.en}” is `); el.appendChild(b(q.answer)); add('.');
-  } else if (!ok) {
-    add(`“${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+    const into = ` in ${LANGS[q.to].name}`;
+    el.appendChild(b(q.trap)); add(` looks like “${q.src}” but means `); el.appendChild(b(q.trapEn)); add('. ');
+    add(`“${q.src}”${into} is `); el.appendChild(b(q.answer)); add('.');
   } else {
-    add(`Right: “${q.en}” is `); el.appendChild(b(q.answer)); add('.');
+    const into = ` in ${LANGS[q.to].name}`, gloss = q.from === 'en' ? '' : ` (${q.en})`;
+    if (!ok && picked && picked.m) { el.appendChild(b(choice)); add(` means “${picked.m}”. “${q.src}”${gloss}${into} is `); }
+    else if (!ok) add(`“${q.src}”${gloss}${into} is `);
+    else add(`Right: “${q.src}”${gloss}${into} is `);
+    el.appendChild(b(q.answer)); add('.');
   }
   if (crowd && crowd.total > 1) add(` ${crowd.fooled}% of ${crowd.total.toLocaleString()} players were fooled.`);
 }
@@ -1035,7 +1062,7 @@ function finishDay() {
 function showSummary() {
   show('summary');
   const score = answers.filter(a => a.ok).length;
-  $('sumDir').textContent = `Today's ten · ${LANGS[lang].name}`;
+  $('sumDir').textContent = `Today's ten · mixed languages`;
   $('sumDate').textContent = prettyDate(today);
   $('sumScore').innerHTML = `${score}<span>/${set.length}</span>`;
   $('sumTiles').innerHTML = answers.map(a => `<i class="${a.ok ? '' : 'bad'}"></i>`).join('');
@@ -1045,7 +1072,7 @@ function showSummary() {
   set.forEach((q, i) => {
     const a = answers[i]; if (!a) return;
     const li = document.createElement('li'); if (!a.ok) li.className = 'bad';
-    const s1 = document.createElement('span'); s1.textContent = q.en + ' →';
+    const s1 = document.createElement('span'); s1.textContent = `${q.src} (${q.from.toUpperCase()} → ${q.to.toUpperCase()})`;
     const s2 = document.createElement('b'); s2.textContent = q.answer;
     li.append(s1, s2);
     if (!a.ok) { const s3 = document.createElement('span'); s3.textContent = `(you chose ${a.c})`; s3.style.color = 'var(--muted)'; li.append(s3); }
@@ -1059,7 +1086,7 @@ function showSummary() {
 function shareText(score) {
   const tiles = answers.map(a => (a.ok ? '🟩' : '🟥')).join('');
   const fooled = set.length - score;
-  return `Lingoezy · ${LANGS[lang].name} · ${prettyDate(today)}\n${tiles} ${score}/${set.length}\n${fooled ? `Fooled ${fooled} time${fooled > 1 ? 's' : ''}. Can you beat me?` : 'Not fooled once.'}\n${SITE}`;
+  return `Lingoezy · ${prettyDate(today)}\n${tiles} ${score}/${set.length}\n${fooled ? `Fooled ${fooled} time${fooled > 1 ? 's' : ''}. Can you beat me?` : 'Not fooled once.'}\n${SITE}`;
 }
 async function copyText(text, btn, label) {
   try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
@@ -1070,8 +1097,7 @@ async function copyText(text, btn, label) {
 // ---------------- make a quiz ----------------
 function prepMake() {
   const sel = $('mkLang');
-  if (!sel.options.length) for (const [c, L] of Object.entries(LANGS)) sel.add(new Option(L.name, c));
-  sel.value = lang;
+  if (!sel.options.length) for (const c of TARGETS) sel.add(new Option(LANGS[c].name, c));
   $('mkErr').textContent = '';
 }
 $('mkSuggest').onclick = () => {
@@ -1104,13 +1130,12 @@ $('makeForm').addEventListener('submit', e => {
 
 function playCustom(o) {
   custom = o;
-  lang = o.l; renderLangs();
   mode = 'daily'; setModeButtons();
   const { words } = bankFor(o.l);
   const qid = 'c:' + lzHash(JSON.stringify([o.l, o.e, o.a, o.d]));
   const opts = lzShuffle([o.a, ...o.d], lzRng(qid)).map(w => ({ w, m: w === o.a ? o.e : (words.get(w) || '') }));
   show('play'); $('progress').hidden = true; $('runLine').hidden = true;
-  showQuestion({ qid, lang: o.l, type: 'custom', en: o.e, answer: o.a, trap: null, trapEn: null, options: opts });
+  showQuestion({ qid, from: 'en', to: o.l, lang: o.l, type: 'custom', src: o.e, en: o.e, answer: o.a, trap: null, trapEn: null, options: opts });
 }
 
 // ---------------- wiring ----------------
@@ -1126,7 +1151,6 @@ document.addEventListener('keydown', e => {
 });
 setInterval(() => { if (dateKey(new Date()) !== today && mode === 'daily' && !custom && (answered || !$('summaryView').hidden)) start('daily'); }, 30000);
 
-renderLangs();
 const h = location.hash.slice(1);
 const fromLink = h.startsWith('q-') ? decodeQuiz(h.slice(2)) : null;
 if (fromLink) playCustom(fromLink); else start('daily');
